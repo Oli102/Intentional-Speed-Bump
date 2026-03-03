@@ -5,7 +5,12 @@
   "description": "Inserts a friction-based choice point before loading YouTube.",
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/*"],
+      "matches": [
+        "*://*.youtube.com/*",
+        "*://*.instagram.com/*",
+        "*://*.tiktok.com/*",
+        "*://*.x.com/*"
+      ],
       "css": ["styles.css"],
       "js": ["content.js"],
       "run_at": "document_start"

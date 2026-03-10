@@ -1,16 +1,18 @@
 {
   "manifest_version": 3,
   "name": "Intentional Speed Bump",
-  "version": "1.0",
-  "description": "Inserts a friction-based choice point before loading YouTube.",
+  "version": "2.0",
+  "description": "Friction-based choice point with behavior tracking.",
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "View your intentionality stats"
+  },
   "content_scripts": [
     {
-      "matches": [
-        "*://*.youtube.com/*",
-        "*://*.instagram.com/*",
-        "*://*.tiktok.com/*",
-        "*://*.x.com/*"
-      ],
+      "matches": ["*://*.youtube.com/*"],
       "css": ["styles.css"],
       "js": ["content.js"],
       "run_at": "document_start"

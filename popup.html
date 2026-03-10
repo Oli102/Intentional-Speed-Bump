@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="header">
+      <h2 id="secret-switch" style="cursor: default; user-select: none;">your patterns <span id="snooze-status" style="color:#ff5555; font-size:12px; display:none;">(snoozed)</span></h2>
+      <p>objective observation. no judgment.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <span class="stat-value" id="val-total-time">--</span>
+        <span class="stat-label">total time spent</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-value" id="val-avg-time">--</span>
+        <span class="stat-label">avg minutes/visit</span>
+      </div>
+    </div>
+
+    <div class="behavior-split">
+      <div class="split-item">
+        <span class="split-value" id="val-ignored">--</span>
+        <span class="split-label">times ignored warning</span>
+      </div>
+      <div class="split-item">
+        <span class="split-value" id="val-peak-time">--</span>
+        <span class="split-label" style="text-align: right;">most likely time</span>
+      </div>
+    </div>
+    
+    <button id="reset-btn">reset data</button>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

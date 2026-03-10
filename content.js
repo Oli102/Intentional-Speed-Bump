@@ -1,9 +1,20 @@
-// Check session storage to see where we are in the loop
-if (!sessionStorage.getItem('speedBumpCleared')) {
-    createSpeedBump();
-} else if (sessionStorage.getItem('speedBumpCleared') && !sessionStorage.getItem('timerFinished')) {
-    // If they cleared the bump but the timer hasn't finished, start/resume the timer
-    startTenMinuteTimer();
+chrome.storage.local.get(['isSnoozed'], (config) => {
+    if (config.isSnoozed) {
+        return; // Emergency switch is on. Let YouTube load normally.
+    }
+    initSpeedBump();
+});
+
+let sessionStartTime = Date.now();
+let hitTenMinuteMark = false;
+let sessionLogged = false;
+
+function initSpeedBump() {
+    if (!sessionStorage.getItem('speedBumpCleared')) {
+        createSpeedBump();
+    } else if (sessionStorage.getItem('speedBumpCleared') && !sessionStorage.getItem('timerFinished')) {
+        startTenMinuteTimer();
+    }
 }
 
 function createSpeedBump() {
@@ -56,18 +67,13 @@ function createSpeedBump() {
 }
 
 function startTenMinuteTimer() {
-    // Prevent multiple timers if the script runs twice
     if (document.getElementById('speed-bump-timer')) return;
 
-    // Create and inject the timer element
     const timerEl = document.createElement('div');
     timerEl.id = 'speed-bump-timer';
     document.documentElement.appendChild(timerEl);
 
-    // 10 minutes in seconds (Change this to 5 to test it quickly!)
     let timeLeft = 600; 
-
-    // Update the clock immediately before the first second ticks
     updateDisplay(timeLeft, timerEl);
 
     const countdown = setInterval(() => {
@@ -86,13 +92,14 @@ function startTenMinuteTimer() {
 function updateDisplay(secondsLeft, element) {
     const minutes = Math.floor(secondsLeft / 60);
     const seconds = secondsLeft % 60;
-    // Pad with leading zeros (e.g., 09:05)
     const formattedMinutes = String(minutes).padStart(2, '0');
     const formattedSeconds = String(seconds).padStart(2, '0');
     element.innerText = `${formattedMinutes}:${formattedSeconds}`;
 }
 
 function showTenMinuteModal() {
+    hitTenMinuteMark = true; // TRACKING: Flag that user hit the 10 min mark
+
     const wrapper = document.createElement('div');
     wrapper.id = 'ten-min-modal-wrapper';
 
@@ -129,4 +136,46 @@ function showTenMinuteModal() {
     modal.appendChild(btnContainer);
     wrapper.appendChild(modal);
     document.documentElement.appendChild(wrapper);
+}
+
+// --- NEW TRACKING LOGIC ---
+window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && !sessionLogged) {
+        recordSessionData();
+        sessionLogged = true;
+    }
+});
+
+// Fallback for closing the window completely
+window.addEventListener('beforeunload', () => {
+    if (!sessionLogged) {
+        recordSessionData();
+        sessionLogged = true;
+    }
+});
+
+function recordSessionData() {
+    const sessionDurationMins = (Date.now() - sessionStartTime) / 60000;
+    const now = new Date();
+    const day = now.getDay(); 
+    const hour = now.getHours(); 
+    const timeKey = `${day}-${hour}`;
+
+    chrome.storage.local.get({
+        totalMinutes: 0,
+        totalSessions: 0,
+        ignoredWarnings: 0,
+        timeMap: {} 
+    }, (data) => {
+        
+        let updatedTimeMap = data.timeMap;
+        updatedTimeMap[timeKey] = (updatedTimeMap[timeKey] || 0) + 1;
+
+        chrome.storage.local.set({
+            totalMinutes: data.totalMinutes + sessionDurationMins,
+            totalSessions: data.totalSessions + 1,
+            ignoredWarnings: data.ignoredWarnings + (hitTenMinuteMark ? 1 : 0),
+            timeMap: updatedTimeMap
+        });
+    });
 }

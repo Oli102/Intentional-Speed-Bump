@@ -154,28 +154,43 @@ window.addEventListener('beforeunload', () => {
     }
 });
 
+function getSiteName() {
+    const host = window.location.hostname;
+    if (host.includes('youtube.com')) return 'youtube';
+    if (host.includes('instagram.com')) return 'instagram';
+    if (host.includes('tiktok.com')) return 'tiktok';
+    if (host.includes('x.com')) return 'x';
+    return 'other';
+}
+
 function recordSessionData() {
     const sessionDurationMins = (Date.now() - sessionStartTime) / 60000;
     const now = new Date();
     const day = now.getDay(); 
     const hour = now.getHours(); 
     const timeKey = `${day}-${hour}`;
+    const siteName = getSiteName();
 
     chrome.storage.local.get({
         totalMinutes: 0,
         totalSessions: 0,
         ignoredWarnings: 0,
-        timeMap: {} 
+        timeMap: {},
+        siteMinutes: {}
     }, (data) => {
         
         let updatedTimeMap = data.timeMap;
         updatedTimeMap[timeKey] = (updatedTimeMap[timeKey] || 0) + 1;
 
+        let updatedSiteMinutes = data.siteMinutes;
+        updatedSiteMinutes[siteName] = (updatedSiteMinutes[siteName] || 0) + sessionDurationMins;
+
         chrome.storage.local.set({
             totalMinutes: data.totalMinutes + sessionDurationMins,
             totalSessions: data.totalSessions + 1,
             ignoredWarnings: data.ignoredWarnings + (hitTenMinuteMark ? 1 : 0),
-            timeMap: updatedTimeMap
+            timeMap: updatedTimeMap,
+            siteMinutes: updatedSiteMinutes
         });
     });
 }

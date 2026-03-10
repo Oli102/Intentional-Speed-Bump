@@ -33,19 +33,29 @@ function formatAmPm(hour) {
     return `${formattedHour} ${ampm}`;
 }
 
+function formatTime(mins) {
+    if (mins >= 60) return `${(mins / 60).toFixed(1)}h`;
+    return `${Math.round(mins)}m`;
+}
+
 function loadStats() {
     chrome.storage.local.get({
         totalMinutes: 0,
         totalSessions: 0,
         ignoredWarnings: 0,
-        timeMap: {}
+        timeMap: {},
+        siteMinutes: {}
     }, (data) => {
         
         // Total Time formatting
-        let totalTimeStr = `${Math.round(data.totalMinutes)}m`;
-        if (data.totalMinutes > 60) {
-            totalTimeStr = `${(data.totalMinutes / 60).toFixed(1)}h`;
-        }
+        document.getElementById('val-total-time').innerText = formatTime(data.totalMinutes);
+
+        // Per-site breakdown
+        const sm = data.siteMinutes;
+        document.getElementById('val-yt-time').innerText = sm.youtube ? formatTime(sm.youtube) : '--';
+        document.getElementById('val-ig-time').innerText = sm.instagram ? formatTime(sm.instagram) : '--';
+        document.getElementById('val-tt-time').innerText = sm.tiktok ? formatTime(sm.tiktok) : '--';
+        document.getElementById('val-x-time').innerText = sm.x ? formatTime(sm.x) : '--';
 
         // Avg Time
         let avgTimeMins = data.totalSessions === 0 ? 0 : data.totalMinutes / data.totalSessions;
@@ -58,7 +68,6 @@ function loadStats() {
             peakTimeStr = `${daysOfWeek[parseInt(dayStr)]}, ${formatAmPm(parseInt(hourStr))}`;
         }
 
-        document.getElementById('val-total-time').innerText = totalTimeStr;
         document.getElementById('val-avg-time').innerText = `${Math.round(avgTimeMins)}m`;
         document.getElementById('val-ignored').innerText = data.ignoredWarnings;
         document.getElementById('val-peak-time').innerText = peakTimeStr;

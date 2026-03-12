@@ -6,13 +6,26 @@
 </head>
 <body>
   <div class="dashboard-container">
-    <div class="header">
-      <h2 id="secret-switch" style="cursor: default; user-select: none;">your patterns <span id="snooze-status" style="color:#ff5555; font-size:12px; display:none;">(snoozed)</span></h2>
-      <p>objective observation. no judgment.</p>
+    <div class="hero-panel">
+      <div class="header">
+        <h2 id="secret-switch" class="header-title">your patterns <span id="snooze-status" class="snooze-status">snoozed</span></h2>
+        <p>objective observation. no judgment.</p>
+      </div>
+
+      <div class="summary-strip">
+        <div class="summary-chip">
+          <span class="summary-chip-label">social media today</span>
+          <span class="summary-chip-value" id="val-today-time">--</span>
+        </div>
+        <div class="summary-chip">
+          <span class="summary-chip-label">social media this week</span>
+          <span class="summary-chip-value" id="val-week-time">--</span>
+        </div>
+      </div>
     </div>
 
     <div class="level-selector">
-      <label for="aggression-select" class="split-label">friction level:</label>
+      <label for="aggression-select" class="control-label">friction level</label>
       <select id="aggression-select">
         <option value="soft">soft (15m, short pause)</option>
         <option value="neutral">neutral (10m, standard pause)</option>
@@ -21,10 +34,10 @@
       </select>
     </div>
 
-    <div class="stats-grid">
+    <div class="stats-grid stats-grid-primary">
       <div class="stat-box">
         <span class="stat-value" id="val-total-time">--</span>
-        <span class="stat-label">total time spent</span>
+        <span class="stat-label">total time on social media</span>
       </div>
       <div class="stat-box">
         <span class="stat-value" id="val-avg-time">--</span>
@@ -32,7 +45,7 @@
       </div>
     </div>
 
-    <div class="behavior-split">
+    <div class="behavior-split panel-block">
       <div class="split-item">
         <span class="split-value" id="val-ignored">--</span>
         <span class="split-label">times ignored warning</span>
@@ -43,7 +56,7 @@
       </div>
     </div>
 
-    <div class="site-breakdown">
+    <div class="site-breakdown panel-block">
       <div class="section-heading-row">
         <h3>site split</h3>
         <span>minutes / visits / ignored / peak</span>

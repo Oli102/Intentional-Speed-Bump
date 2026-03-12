@@ -198,6 +198,7 @@ function recordSessionData() {
 
     const sessionDurationMins = (Date.now() - sessionStartTime) / 60000;
     const now = new Date();
+    const endedAt = now.toISOString();
     const day = now.getDay(); 
     const hour = now.getHours(); 
     const timeKey = `${day}-${hour}`;
@@ -207,7 +208,8 @@ function recordSessionData() {
         totalSessions: 0,
         ignoredWarnings: 0,
         timeMap: {},
-        siteStats: {}
+        siteStats: {},
+        sessionHistory: []
     }, (data) => {
         const updatedTimeMap = { ...data.timeMap };
         updatedTimeMap[timeKey] = (updatedTimeMap[timeKey] || 0) + 1;
@@ -224,12 +226,25 @@ function recordSessionData() {
             timeMap: updatedSiteTimeMap
         };
 
+        const updatedSessionHistory = [...data.sessionHistory, {
+            endedAt,
+            minutes: sessionDurationMins,
+            siteKey: currentSiteKey,
+            ignoredWarning: hitTenMinuteMark
+        }].filter((entry) => {
+            if (!entry?.endedAt) return false;
+            const entryTime = new Date(entry.endedAt).getTime();
+            const ninetyDaysAgo = Date.now() - (90 * 24 * 60 * 60 * 1000);
+            return !Number.isNaN(entryTime) && entryTime >= ninetyDaysAgo;
+        });
+
         chrome.storage.local.set({
             totalMinutes: data.totalMinutes + sessionDurationMins,
             totalSessions: data.totalSessions + 1,
             ignoredWarnings: data.ignoredWarnings + (hitTenMinuteMark ? 1 : 0),
             timeMap: updatedTimeMap,
-            siteStats: updatedSiteStats
+            siteStats: updatedSiteStats,
+            sessionHistory: updatedSessionHistory
         });
     });
 }

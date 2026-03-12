@@ -67,14 +67,13 @@ function loadStats() {
         totalSessions: 0,
         ignoredWarnings: 0,
         timeMap: {},
-        siteStats: {}
+        siteStats: {},
+        sessionHistory: []
     }, (data) => {
+        const timeBreakdown = getTimeBreakdown(data.sessionHistory);
         
         // Total Time formatting
-        let totalTimeStr = `${Math.round(data.totalMinutes)}m`;
-        if (data.totalMinutes > 60) {
-            totalTimeStr = `${(data.totalMinutes / 60).toFixed(1)}h`;
-        }
+        let totalTimeStr = formatMinutes(data.totalMinutes);
 
         // Avg Time
         let avgTimeMins = data.totalSessions === 0 ? 0 : data.totalMinutes / data.totalSessions;
@@ -88,6 +87,8 @@ function loadStats() {
         }
 
         document.getElementById('val-total-time').innerText = totalTimeStr;
+        document.getElementById('val-today-time').innerText = formatMinutes(timeBreakdown.todayMinutes);
+        document.getElementById('val-week-time').innerText = formatMinutes(timeBreakdown.weekMinutes);
         document.getElementById('val-avg-time').innerText = `${Math.round(avgTimeMins)}m`;
         document.getElementById('val-ignored').innerText = data.ignoredWarnings;
         document.getElementById('val-peak-time').innerText = peakTimeStr;
@@ -146,7 +147,7 @@ function normalizeSiteStat(siteStat) {
 
 function formatMinutes(totalMinutes) {
     if (totalMinutes <= 0) return '0m';
-    if (totalMinutes > 60) return `${(totalMinutes / 60).toFixed(1)}h`;
+    if (totalMinutes >= 60) return `${(totalMinutes / 60).toFixed(1)}h`;
     return `${Math.round(totalMinutes)}m`;
 }
 
@@ -161,4 +162,29 @@ function getPeakTimeLabel(timeMap) {
     const peakKey = Object.keys(timeMap).reduce((a, b) => timeMap[a] > timeMap[b] ? a : b);
     const [dayStr, hourStr] = peakKey.split('-');
     return `${daysOfWeek[parseInt(dayStr, 10)]}, ${formatAmPm(parseInt(hourStr, 10))}`;
+}
+
+function getTimeBreakdown(sessionHistory) {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dayOfWeek = startOfToday.getDay();
+    const startOfWeek = new Date(startOfToday);
+    startOfWeek.setDate(startOfToday.getDate() - dayOfWeek);
+
+    return sessionHistory.reduce((totals, entry) => {
+        if (!entry?.endedAt || typeof entry.minutes !== 'number') return totals;
+
+        const entryDate = new Date(entry.endedAt);
+        if (Number.isNaN(entryDate.getTime())) return totals;
+
+        if (entryDate >= startOfToday) {
+            totals.todayMinutes += entry.minutes;
+        }
+
+        if (entryDate >= startOfWeek) {
+            totals.weekMinutes += entry.minutes;
+        }
+
+        return totals;
+    }, { todayMinutes: 0, weekMinutes: 0 });
 }

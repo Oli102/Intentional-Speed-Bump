@@ -16,7 +16,9 @@
         "*://*.youtube.com/*",
         "*://*.instagram.com/*",
         "*://*.tiktok.com/*",
-        "*://*.x.com/*"
+        "*://*.x.com/*",
+        "*://*.twitter.com/*",
+        "*://*.snapchat.com/*"
       ],
       "css": ["styles.css"],
       "js": ["content.js"],

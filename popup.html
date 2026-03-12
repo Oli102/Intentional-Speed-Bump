@@ -11,16 +11,20 @@
       <p>objective observation. no judgment.</p>
     </div>
 
+    <div class="level-selector">
+      <label for="aggression-select" class="split-label">friction level:</label>
+      <select id="aggression-select">
+        <option value="soft">soft (15m, short pause)</option>
+        <option value="neutral">neutral (10m, standard pause)</option>
+        <option value="harsh">harsh (5m, long pause, forced close)</option>
+        <option value="aggressive">aggressive (5m, max pause, auto-close)</option>
+      </select>
+    </div>
+
     <div class="stats-grid">
       <div class="stat-box">
         <span class="stat-value" id="val-total-time">--</span>
         <span class="stat-label">total time spent</span>
-        <div class="site-breakdown">
-          <div class="site-row"><span class="site-name">youtube</span><span class="site-time" id="val-yt-time">--</span></div>
-          <div class="site-row"><span class="site-name">instagram</span><span class="site-time" id="val-ig-time">--</span></div>
-          <div class="site-row"><span class="site-name">tiktok</span><span class="site-time" id="val-tt-time">--</span></div>
-          <div class="site-row"><span class="site-name">x</span><span class="site-time" id="val-x-time">--</span></div>
-        </div>
       </div>
       <div class="stat-box">
         <span class="stat-value" id="val-avg-time">--</span>
@@ -37,6 +41,14 @@
         <span class="split-value" id="val-peak-time">--</span>
         <span class="split-label" style="text-align: right;">most likely time</span>
       </div>
+    </div>
+
+    <div class="site-breakdown">
+      <div class="section-heading-row">
+        <h3>site split</h3>
+        <span>minutes / visits / ignored / peak</span>
+      </div>
+      <div id="site-analytics-list" class="site-analytics-list"></div>
     </div>
     
     <button id="reset-btn">reset data</button>

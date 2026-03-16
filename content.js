@@ -1,8 +1,9 @@
 let currentAggression = 'neutral'; // Default
 const currentSiteKey = getCurrentSiteKey();
+const isExcludedSite = shouldExcludeSite();
 
 chrome.storage.local.get({ isSnoozed: false, aggressionLevel: 'neutral' }, (config) => {
-    if (config.isSnoozed) return; // Emergency switch is on. Let YouTube load normally.
+    if (config.isSnoozed || isExcludedSite) return; // Emergency switch or excluded host.
     currentAggression = config.aggressionLevel;
     initSpeedBump();
 });
@@ -13,14 +14,40 @@ let sessionLogged = false;
 
 // Aggression Settings Map
 const settings = {
-    soft: { bumpDelay: 1000, timerSeconds: 900, allowStay: true, autoClose: false }, // 15 mins
-    neutral: { bumpDelay: 2000, timerSeconds: 600, allowStay: true, autoClose: false }, // 10 mins
-    harsh: { bumpDelay: 3000, timerSeconds: 300, allowStay: false, autoClose: false }, // 5 mins
-    aggressive: { bumpDelay: 5000, timerSeconds: 300, allowStay: false, autoClose: true } // 5 mins
+    soft: {
+        bumpDelay: 1000,
+        timerSeconds: 900,
+        allowStay: true,
+        autoClose: false,
+        promptText: '15 minute break. did you earn it?'
+    },
+    neutral: {
+        bumpDelay: 2000,
+        timerSeconds: 600,
+        allowStay: true,
+        autoClose: false,
+        promptText: '10 minute break. did you earn it?'
+    },
+    harsh: {
+        bumpDelay: 3000,
+        timerSeconds: 300,
+        allowStay: false,
+        autoClose: false,
+        promptText: '5 minute break. did you earn it?'
+    },
+    aggressive: {
+        bumpDelay: 5000,
+        timerSeconds: 300,
+        allowStay: false,
+        autoClose: true,
+        promptText: '5 minute break. did you earn it?'
+    }
 };
 
 function getCurrentSiteKey() {
     const hostname = window.location.hostname.replace(/^www\./, '');
+
+    if (hostname === 'music.youtube.com') return null;
 
     if (hostname.endsWith('youtube.com')) return 'youtube';
     if (hostname.endsWith('instagram.com')) return 'instagram';
@@ -29,6 +56,11 @@ function getCurrentSiteKey() {
     if (hostname.endsWith('snapchat.com')) return 'snapchat';
 
     return null;
+}
+
+function shouldExcludeSite() {
+    const hostname = window.location.hostname.replace(/^www\./, '');
+    return hostname === 'music.youtube.com';
 }
 
 function normalizeSiteStat(siteStat) {
@@ -51,12 +83,14 @@ function initSpeedBump() {
 function createSpeedBump() {
     document.documentElement.style.overflow = 'hidden';
 
+    const currentSettings = settings[currentAggression] || settings.neutral;
+
     const overlay = document.createElement('div');
     overlay.id = 'speed-bump-overlay';
 
     const text = document.createElement('div');
     text.id = 'speed-bump-text';
-    text.innerText = 'break time. did you earn it?';
+    text.innerText = currentSettings.promptText;
 
     const btnContainer = document.createElement('div');
     btnContainer.className = 'speed-bump-btn-container';
@@ -80,18 +114,24 @@ function createSpeedBump() {
         text.style.opacity = '0';
         
         setTimeout(() => {
-            text.innerText = 'okay. be intentional.';
+            text.innerText = 'okay. be mindful.';
             text.style.opacity = '1';
             btnContainer.style.display = 'none';
         }, 300);
 
-        const delay = settings[currentAggression].bumpDelay;
+        const delay = currentSettings.bumpDelay;
 
         setTimeout(() => {
-            overlay.remove();
-            document.documentElement.style.overflow = '';
-            sessionStorage.setItem('speedBumpCleared', 'true');
-            startTimer();
+            text.style.opacity = '0';
+            overlay.style.transition = 'opacity 450ms ease';
+            overlay.style.opacity = '0';
+
+            setTimeout(() => {
+                overlay.remove();
+                document.documentElement.style.overflow = '';
+                sessionStorage.setItem('speedBumpCleared', 'true');
+                startTimer();
+            }, 460);
         }, delay);
     };
 

@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    document.documentElement.style.width = '790px';
+    document.body.style.width = '790px';
+
     loadStats();
     checkSnoozeStatus();
     initAggressionSelector();
